@@ -1,31 +1,25 @@
 #NoTrayIcon
-AUDIO_DEVICE=4
 
-UnmuteIfNonZero()
-{
-  global AUDIO_DEVICE
-  SoundGet,isMute,,MUTE,%AUDIO_DEVICE%
-  if isMute=On
-  {
-    SoundSet,0,,MUTE,%AUDIO_DEVICE%
-  }
+#include VA.ahk
+
+deviceName := "BGM"
+device := VA_GetDevice(deviceName)
+if !device {
+  MsgBox Could not find device: %deviceName%
+  exit
 }
 
 ^Volume_Down::
-SoundSet,-5,,,%AUDIO_DEVICE%
-SoundGet,vol,,VOLUME,%AUDIO_DEVICE%
-if vol=0
-{
-  SoundSet,1,,MUTE,%AUDIO_DEVICE%
-} else {
-  UnmuteIfNonZero()
-}
-
+volume := VA_GetMasterVolume("", device)
+VA_SetMasterVolume(volume - 5, "", device)
+VA_SetMasterMute(volume - 5 <= 0, device)
 return
 
 ^Volume_Up::
-SoundSet,+5,,,%AUDIO_DEVICE%
-UnmuteIfNonZero()
+volume := VA_GetMasterVolume("", device)
+VA_SetMasterVolume(volume + 5, "", device)
+VA_SetMasterMute(0, device)
 return
 
-^Volume_Mute::SoundSet,+0,,MUTE,%AUDIO_DEVICE%
+^Volume_Mute::
+VA_SetMasterMute(!VA_GetMasterMute(device), device)
